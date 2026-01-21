@@ -8,7 +8,7 @@ services:
   # BACKEND - API Node.js
   # ===========================================
   backend:
-    image: ghcr.io/${GITHUB_USER:-rafaeljrs}/music-downloader-backend:${TAG:-latest}
+    image: ghcr.io/${GITHUB_USER:-rafaeljuniorvip}/music-downloader-backend:${TAG:-latest}
     networks:
       - minha_rede
       - internal
@@ -48,7 +48,7 @@ services:
   # FRONTEND - React + Nginx
   # ===========================================
   frontend:
-    image: ghcr.io/${GITHUB_USER:-rafaeljrs}/music-downloader-frontend:${TAG:-latest}
+    image: ghcr.io/${GITHUB_USER:-rafaeljuniorvip}/music-downloader-frontend:${TAG:-latest}
     networks:
       - minha_rede
       - internal
