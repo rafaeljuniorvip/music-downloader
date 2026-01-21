@@ -19,6 +19,9 @@ RUN npm run build
 # Stage 2: Nginx para servir arquivos estaticos
 FROM nginx:alpine
 
+# Instala curl para healthcheck
+RUN apk add --no-cache curl
+
 # Remove configuracao padrao
 RUN rm /etc/nginx/conf.d/default.conf
 
@@ -33,7 +36,7 @@ EXPOSE 80
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD wget --no-verbose --tries=1 --spider http://localhost:80/ || exit 1
+    CMD curl -f http://localhost:80/ || exit 1
 
 # Comando padrao do nginx
 CMD ["nginx", "-g", "daemon off;"]

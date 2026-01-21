@@ -34,9 +34,9 @@ ENV YT_DLP_PATH=/usr/local/bin/yt-dlp
 # Expoe porta
 EXPOSE 8765
 
-# Health check
+# Health check (usa curl que ja esta instalado)
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD wget --no-verbose --tries=1 --spider http://localhost:8765/api/health || exit 1
+    CMD curl -f http://localhost:8765/api/health || exit 1
 
 # Comando de inicializacao
 CMD ["node", "src/app.js"]
