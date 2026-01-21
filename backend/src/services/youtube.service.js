@@ -20,14 +20,26 @@ const getCommonArgs = () => {
   ];
 
   if (process.env.NODE_ENV === 'production') {
+    console.log('[YouTube Service] Ambiente: production');
+    console.log('[YouTube Service] COOKIES_FILE env:', COOKIES_FILE);
+
     // Em producao, usa arquivo de cookies se existir
-    if (COOKIES_FILE && existsSync(COOKIES_FILE)) {
-      args.push('--cookies', COOKIES_FILE);
-      console.log('Usando arquivo de cookies:', COOKIES_FILE);
+    if (COOKIES_FILE) {
+      const cookiesExist = existsSync(COOKIES_FILE);
+      console.log('[YouTube Service] Arquivo de cookies existe:', cookiesExist);
+
+      if (cookiesExist) {
+        args.push('--cookies', COOKIES_FILE);
+        console.log('[YouTube Service] ✓ Usando arquivo de cookies:', COOKIES_FILE);
+      } else {
+        console.warn('[YouTube Service] ⚠ Arquivo de cookies não encontrado:', COOKIES_FILE);
+      }
+    } else {
+      console.warn('[YouTube Service] ⚠ COOKIES_FILE não configurado');
     }
     args.push('--no-check-certificates');
   } else {
-    // Em desenvolvimento, usa cookies do navegador
+    console.log('[YouTube Service] Ambiente: development - usando cookies do navegador');
     args.push('--cookies-from-browser', 'firefox');
   }
 
