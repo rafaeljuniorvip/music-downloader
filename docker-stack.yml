@@ -8,7 +8,7 @@ services:
   # BACKEND - API Node.js
   # ===========================================
   backend:
-    image: ghcr.io/${GITHUB_USER:-rafaeljuniorvip}/music-downloader-backend:${TAG:-latest}
+    image: ghcr.io/rafaeljuniorvip/music-downloader-backend:latest
     networks:
       - minha_rede
       - internal
@@ -17,13 +17,15 @@ services:
       - PORT=8765
       - DB_HOST=downytube-postgres
       - DB_PORT=5432
-      - DB_NAME=${DB_NAME:-music_downloader}
-      - DB_USER=${DB_USER:-postgres}
-      - DB_PASSWORD=${DB_PASSWORD:-admin123}
+      - DB_NAME=music_downloader
+      - DB_USER=postgres
+      - DB_PASSWORD=admin123
       - YT_DLP_PATH=/usr/local/bin/yt-dlp
       - DOWNLOADS_DIR=/app/downloads
+      - COOKIES_FILE=/app/cookies/youtube-cookies.txt
     volumes:
       - downloads:/app/downloads
+      - /opt/downytube/cookies:/app/cookies:ro
     deploy:
       mode: replicated
       replicas: 1
@@ -41,14 +43,12 @@ services:
       timeout: 10s
       retries: 3
       start_period: 10s
-    depends_on:
-      - postgres
 
   # ===========================================
   # FRONTEND - React + Nginx
   # ===========================================
   frontend:
-    image: ghcr.io/${GITHUB_USER:-rafaeljuniorvip}/music-downloader-frontend:${TAG:-latest}
+    image: ghcr.io/rafaeljuniorvip/music-downloader-frontend:latest
     networks:
       - minha_rede
       - internal
@@ -79,9 +79,9 @@ services:
     networks:
       - internal
     environment:
-      - POSTGRES_DB=${DB_NAME:-music_downloader}
-      - POSTGRES_USER=${DB_USER:-postgres}
-      - POSTGRES_PASSWORD=${DB_PASSWORD:-admin123}
+      - POSTGRES_DB=music_downloader
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=admin123
     volumes:
       - postgres_data:/var/lib/postgresql/data
     deploy:

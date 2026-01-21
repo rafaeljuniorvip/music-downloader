@@ -11,18 +11,30 @@ const __dirname = dirname(__filename);
 // Usa variavel de ambiente ou caminho local para desenvolvimento
 const YT_DLP_PATH = process.env.YT_DLP_PATH || '/home/rafaeljrs/gits/falavipytdlhtml/musicas_playlist/yt-dlp';
 const DEFAULT_DOWNLOADS_DIR = process.env.DOWNLOADS_DIR || join(__dirname, '../../downloads');
+const COOKIES_FILE = process.env.COOKIES_FILE || null;
 
 // Opcoes comuns para evitar detecção de bot
-// Em Docker, não usa --cookies-from-browser (não há browser)
-const COMMON_ARGS = process.env.NODE_ENV === 'production'
-  ? [
-      '--user-agent', 'Mozilla/5.0 (X11; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0',
-      '--no-check-certificates'
-    ]
-  : [
-      '--cookies-from-browser', 'firefox',
-      '--user-agent', 'Mozilla/5.0 (X11; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0'
-    ];
+const getCommonArgs = () => {
+  const args = [
+    '--user-agent', 'Mozilla/5.0 (X11; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0'
+  ];
+
+  if (process.env.NODE_ENV === 'production') {
+    // Em producao, usa arquivo de cookies se existir
+    if (COOKIES_FILE && existsSync(COOKIES_FILE)) {
+      args.push('--cookies', COOKIES_FILE);
+      console.log('Usando arquivo de cookies:', COOKIES_FILE);
+    }
+    args.push('--no-check-certificates');
+  } else {
+    // Em desenvolvimento, usa cookies do navegador
+    args.push('--cookies-from-browser', 'firefox');
+  }
+
+  return args;
+};
+
+const COMMON_ARGS = getCommonArgs();
 
 class YoutubeService extends EventEmitter {
   constructor() {
