@@ -30,6 +30,9 @@ const getCommonArgs = () => {
 
       if (cookiesExist) {
         args.push('--cookies', COOKIES_FILE);
+        args.push('--no-cookies-from-browser');
+        // Não salvar cookies modificados (volume é read-only)
+        args.push('--cookies-no-save');
         console.log('[YouTube Service] ✓ Usando arquivo de cookies:', COOKIES_FILE);
       } else {
         console.warn('[YouTube Service] ⚠ Arquivo de cookies não encontrado:', COOKIES_FILE);
