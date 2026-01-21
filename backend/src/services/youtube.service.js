@@ -296,14 +296,19 @@ class YoutubeService extends EventEmitter {
         args.push('--embed-thumbnail');
       }
 
+      console.log('[Download] Iniciando download:', downloadId);
+      console.log('[Download] Comando:', YT_DLP_PATH, args.join(' '));
+
       const ytProcess = spawn(YT_DLP_PATH, args);
       this.activeProcesses.set(downloadId, { process: ytProcess, paused: false });
 
       let lastProgress = 0;
       let outputFile = null;
+      let stderrBuffer = '';
 
       ytProcess.stdout.on('data', (data) => {
         const output = data.toString();
+        console.log('[Download stdout]', output.trim());
 
         // Extrai progresso do download
         const progressMatch = output.match(/(\d+\.?\d*)%/);
@@ -334,6 +339,8 @@ class YoutubeService extends EventEmitter {
 
       ytProcess.stderr.on('data', (data) => {
         const error = data.toString();
+        stderrBuffer += error;
+        console.log('[Download stderr]', error.trim());
         if (!error.includes('WARNING')) {
           this.emit('error', { id: downloadId, error: error });
         }
@@ -362,8 +369,10 @@ class YoutubeService extends EventEmitter {
           this.emit('complete', { id: downloadId, file: outputFile });
           resolve({ success: true, file: outputFile });
         } else {
-          const error = new Error('Download falhou');
-          this.emit('error', { id: downloadId, error: error.message });
+          const errorMsg = stderrBuffer || 'Download falhou com código ' + code;
+          console.error('[Download] Falhou:', errorMsg);
+          const error = new Error(errorMsg);
+          this.emit('error', { id: downloadId, error: errorMsg });
           reject(error);
         }
       });
