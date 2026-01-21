@@ -18,7 +18,9 @@ const getCommonArgs = () => {
   const args = [
     '--user-agent', 'Mozilla/5.0 (X11; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0',
     // Usa Node.js como runtime JavaScript para yt-dlp
-    '--js-runtimes', 'node'
+    '--js-runtimes', 'node',
+    // Habilita componente remoto para resolver desafios JavaScript do YouTube
+    '--remote-components', 'ejs:github'
   ];
 
   if (process.env.NODE_ENV === 'production') {
