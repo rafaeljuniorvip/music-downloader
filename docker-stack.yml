@@ -25,7 +25,7 @@ services:
       - COOKIES_FILE=/app/cookies/youtube-cookies.txt
     volumes:
       - downloads:/app/downloads
-      - /opt/downytube/cookies:/app/cookies:ro
+      - /opt/downytube/cookies:/app/cookies
     deploy:
       mode: replicated
       replicas: 1
