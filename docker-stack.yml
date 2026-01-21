@@ -1,0 +1,114 @@
+# Docker Stack - Music Downloader (downytube.papelaria.vip)
+# Deploy: docker stack deploy -c docker-stack.yml downytube
+
+version: "3.8"
+
+services:
+  # ===========================================
+  # BACKEND - API Node.js
+  # ===========================================
+  backend:
+    image: ghcr.io/${GITHUB_USER:-rafaeljrs}/music-downloader-backend:${TAG:-latest}
+    networks:
+      - minha_rede
+      - internal
+    environment:
+      - NODE_ENV=production
+      - PORT=8765
+      - DB_HOST=downytube-postgres
+      - DB_PORT=5432
+      - DB_NAME=${DB_NAME:-music_downloader}
+      - DB_USER=${DB_USER:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:-admin123}
+      - YT_DLP_PATH=/usr/local/bin/yt-dlp
+      - DOWNLOADS_DIR=/app/downloads
+    volumes:
+      - downloads:/app/downloads
+    deploy:
+      mode: replicated
+      replicas: 1
+      labels:
+        - traefik.enable=true
+        - traefik.http.routers.downytube-api.rule=Host(`api.downytube.papelaria.vip`)
+        - traefik.http.routers.downytube-api.entrypoints=websecure
+        - traefik.http.routers.downytube-api.tls.certresolver=letsencryptresolver
+        - traefik.http.routers.downytube-api.service=downytube-api
+        - traefik.http.services.downytube-api.loadbalancer.server.port=8765
+        - traefik.http.services.downytube-api.loadbalancer.passHostHeader=true
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8765/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    depends_on:
+      - postgres
+
+  # ===========================================
+  # FRONTEND - React + Nginx
+  # ===========================================
+  frontend:
+    image: ghcr.io/${GITHUB_USER:-rafaeljrs}/music-downloader-frontend:${TAG:-latest}
+    networks:
+      - minha_rede
+      - internal
+    deploy:
+      mode: replicated
+      replicas: 1
+      labels:
+        - traefik.enable=true
+        - traefik.http.routers.downytube-frontend.rule=Host(`downytube.papelaria.vip`)
+        - traefik.http.routers.downytube-frontend.entrypoints=websecure
+        - traefik.http.routers.downytube-frontend.tls.certresolver=letsencryptresolver
+        - traefik.http.routers.downytube-frontend.service=downytube-frontend
+        - traefik.http.services.downytube-frontend.loadbalancer.server.port=80
+        - traefik.http.services.downytube-frontend.loadbalancer.passHostHeader=true
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+
+  # ===========================================
+  # POSTGRES - Banco de Dados
+  # ===========================================
+  postgres:
+    image: postgres:16-alpine
+    hostname: downytube-postgres
+    networks:
+      - internal
+    environment:
+      - POSTGRES_DB=${DB_NAME:-music_downloader}
+      - POSTGRES_USER=${DB_USER:-postgres}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-admin123}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    deploy:
+      mode: replicated
+      replicas: 1
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d music_downloader"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+# ===========================================
+# VOLUMES
+# ===========================================
+volumes:
+  downloads:
+    driver: local
+  postgres_data:
+    driver: local
+
+# ===========================================
+# NETWORKS
+# ===========================================
+networks:
+  minha_rede:
+    external: true
+    name: minha_rede
+  internal:
+    driver: overlay
+    internal: true

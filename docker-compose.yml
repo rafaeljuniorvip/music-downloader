@@ -1,0 +1,58 @@
+# Docker Compose para desenvolvimento local
+# Uso: docker-compose up -d
+
+version: "3.8"
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: music-downloader-backend
+    ports:
+      - "8765:8765"
+    environment:
+      - NODE_ENV=production
+      - PORT=8765
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=music_downloader
+      - DB_USER=postgres
+      - DB_PASSWORD=admin123
+    volumes:
+      - downloads:/app/downloads
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: music-downloader-frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: music-downloader-postgres
+    environment:
+      - POSTGRES_DB=music_downloader
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=admin123
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d music_downloader"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  downloads:
+  postgres_data:

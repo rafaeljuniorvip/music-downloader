@@ -1,0 +1,28 @@
+{
+  "name": "music-downloader-backend",
+  "version": "1.0.0",
+  "description": "Backend para download de músicas do YouTube",
+  "main": "src/app.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js"
+  },
+  "keywords": [
+    "youtube",
+    "download",
+    "music",
+    "mp3"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "pg": "^8.17.1",
+    "uuid": "^11.0.4"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.9"
+  }
+}

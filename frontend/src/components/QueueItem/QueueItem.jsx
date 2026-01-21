@@ -1,0 +1,105 @@
+import './QueueItem.css'
+
+function QueueItem({ item, onPauseResume, onCancel, onRetry }) {
+  const { id, title, status, progress = 0, error, filename, url } = item
+
+  const statusLabels = {
+    waiting: 'Aguardando',
+    downloading: 'Baixando',
+    paused: 'Pausado',
+    completed: 'Concluido',
+    error: 'Erro'
+  }
+
+  const handleDownloadFile = () => {
+    if (filename) {
+      window.open(`/api/download/${encodeURIComponent(filename)}`, '_blank')
+    }
+  }
+
+  const displayTitle = title || url || 'Carregando informacoes...'
+
+  return (
+    <div className={`queue-item queue-item-${status}`}>
+      <div className="item-content">
+        <div className="item-info">
+          <h4 className="item-title" title={displayTitle}>
+            {displayTitle}
+          </h4>
+          <div className="item-meta">
+            <span className={`status-badge status-${status}`}>
+              {statusLabels[status] || status}
+            </span>
+            {error && <span className="error-text">{error}</span>}
+          </div>
+        </div>
+
+        <div className="item-actions">
+          {status === 'downloading' && (
+            <button
+              className="action-btn action-pause"
+              onClick={() => onPauseResume(id, status)}
+              title="Pausar"
+            >
+              <span className="action-icon icon-pause"></span>
+            </button>
+          )}
+
+          {status === 'paused' && (
+            <button
+              className="action-btn action-resume"
+              onClick={() => onPauseResume(id, status)}
+              title="Continuar"
+            >
+              <span className="action-icon icon-play"></span>
+            </button>
+          )}
+
+          {status === 'error' && (
+            <button
+              className="action-btn action-retry"
+              onClick={() => onRetry(id)}
+              title="Tentar novamente"
+            >
+              <span className="action-icon icon-retry"></span>
+            </button>
+          )}
+
+          {status === 'completed' && (
+            <button
+              className="action-btn action-download"
+              onClick={handleDownloadFile}
+              title="Baixar arquivo"
+            >
+              <span className="action-icon icon-download"></span>
+            </button>
+          )}
+
+          {(status === 'waiting' || status === 'downloading' || status === 'paused') && (
+            <button
+              className="action-btn action-cancel"
+              onClick={() => onCancel(id)}
+              title="Cancelar"
+            >
+              <span className="action-icon icon-cancel"></span>
+            </button>
+          )}
+        </div>
+      </div>
+
+      {(status === 'downloading' || status === 'paused') && (
+        <div className="progress-container">
+          <div className="progress-bar">
+            <div
+              className={`progress-fill progress-fill-${status}`}
+              style={{ width: `${progress}%` }}
+            ></div>
+          </div>
+          <span className="progress-text">{Math.round(progress)}%</span>
+        </div>
+      )}
+    </div>
+  )
+}
+
+export default QueueItem
