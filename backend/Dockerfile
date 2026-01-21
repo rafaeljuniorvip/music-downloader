@@ -8,8 +8,8 @@ RUN apk add --no-cache \
     ffmpeg \
     curl \
     ca-certificates \
-    && curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o /usr/local/bin/yt-dlp \
-    && chmod a+rx /usr/local/bin/yt-dlp
+    && pip3 install --break-system-packages yt-dlp \
+    && ln -sf /usr/bin/python3 /usr/bin/python
 
 # Diretorio de trabalho
 WORKDIR /app
@@ -29,7 +29,9 @@ RUN mkdir -p /app/downloads && chmod 777 /app/downloads
 # Variaveis de ambiente
 ENV NODE_ENV=production
 ENV PORT=8765
-ENV YT_DLP_PATH=/usr/local/bin/yt-dlp
+ENV YT_DLP_PATH=/usr/bin/yt-dlp
+# Configura Node.js como runtime JavaScript para yt-dlp
+ENV YT_DLP_JS_RUNTIME=nodejs
 
 # Expoe porta
 EXPOSE 8765

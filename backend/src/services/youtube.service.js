@@ -16,7 +16,9 @@ const COOKIES_FILE = process.env.COOKIES_FILE || null;
 // Opcoes comuns para evitar detecção de bot
 const getCommonArgs = () => {
   const args = [
-    '--user-agent', 'Mozilla/5.0 (X11; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0'
+    '--user-agent', 'Mozilla/5.0 (X11; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0',
+    // Usa Node.js como runtime JavaScript para yt-dlp
+    '--js-runtimes', 'nodejs'
   ];
 
   if (process.env.NODE_ENV === 'production') {
