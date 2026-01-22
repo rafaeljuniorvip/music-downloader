@@ -19,8 +19,32 @@ const API_BASE = import.meta.env.PROD
   ? 'https://api.downytube.papelaria.vip/api'
   : '/api'
 
+// Mapeamento de rotas para tabs
+const ROUTE_TO_TAB = {
+  '/': 'queue',
+  '/queue': 'queue',
+  '/search': 'search',
+  '/history': 'history',
+  '/stats': 'stats',
+  '/settings': 'settings'
+}
+
+const TAB_TO_ROUTE = {
+  queue: '/queue',
+  search: '/search',
+  history: '/history',
+  stats: '/stats',
+  settings: '/settings'
+}
+
+// Obtem tab inicial baseado na URL
+function getInitialTab() {
+  const path = window.location.pathname
+  return ROUTE_TO_TAB[path] || 'queue'
+}
+
 function App() {
-  const [activeTab, setActiveTab] = useState('queue')
+  const [activeTab, setActiveTab] = useState(getInitialTab)
   const [queue, setQueue] = useState([])
   const [history, setHistory] = useState([])
   const [loading, setLoading] = useState(true)
@@ -30,10 +54,40 @@ function App() {
   const searchPageRef = useRef(null)
   const { addToast } = useToast()
 
+  // Funcao para mudar de tab e atualizar URL
+  const handleTabChange = useCallback((tab) => {
+    setActiveTab(tab)
+    const route = TAB_TO_ROUTE[tab] || '/queue'
+    window.history.pushState({ tab }, '', route)
+  }, [])
+
+  // Escuta eventos de navegacao do browser (back/forward)
+  useEffect(() => {
+    const handlePopState = (event) => {
+      if (event.state && event.state.tab) {
+        setActiveTab(event.state.tab)
+      } else {
+        const tab = getInitialTab()
+        setActiveTab(tab)
+      }
+    }
+
+    window.addEventListener('popstate', handlePopState)
+
+    // Define o estado inicial do history
+    const currentTab = getInitialTab()
+    const route = TAB_TO_ROUTE[currentTab] || '/queue'
+    window.history.replaceState({ tab: currentTab }, '', route)
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState)
+    }
+  }, [])
+
   // Keyboard shortcuts handlers
   const handleFocusInput = useCallback(() => {
     if (activeTab !== 'queue') {
-      setActiveTab('queue')
+      handleTabChange('queue')
     }
     // Pequeno delay para garantir que o componente esteja montado
     setTimeout(() => {
@@ -41,7 +95,7 @@ function App() {
         downloadFormRef.current.focusInput()
       }
     }, 50)
-  }, [activeTab])
+  }, [activeTab, handleTabChange])
 
   const handleShowShortcutsHelp = useCallback(() => {
     setShowShortcutsHelp(prev => !prev)
@@ -54,7 +108,7 @@ function App() {
   // Handler para focar no campo de busca
   const handleFocusSearch = useCallback(() => {
     if (activeTab !== 'search') {
-      setActiveTab('search')
+      handleTabChange('search')
     }
     // Pequeno delay para garantir que o componente esteja montado
     setTimeout(() => {
@@ -62,17 +116,17 @@ function App() {
         searchPageRef.current.focusInput()
       }
     }, 50)
-  }, [activeTab])
+  }, [activeTab, handleTabChange])
 
   // Registrar atalhos de teclado
   useKeyboardShortcuts({
     onFocusInput: handleFocusInput,
     onFocusSearch: handleFocusSearch,
-    onGoToSearch: () => setActiveTab('search'),
-    onGoToQueue: () => setActiveTab('queue'),
-    onGoToHistory: () => setActiveTab('history'),
-    onGoToStats: () => setActiveTab('stats'),
-    onGoToSettings: () => setActiveTab('settings'),
+    onGoToSearch: () => handleTabChange('search'),
+    onGoToQueue: () => handleTabChange('queue'),
+    onGoToHistory: () => handleTabChange('history'),
+    onGoToStats: () => handleTabChange('stats'),
+    onGoToSettings: () => handleTabChange('settings'),
     onEscape: handleCloseShortcutsHelp,
     onShowHelp: handleShowShortcutsHelp
   })
@@ -233,7 +287,7 @@ function App() {
   const handleRedownload = async (url) => {
     try {
       await api.addDownload(url)
-      setActiveTab('queue')
+      handleTabChange('queue')
     } catch (error) {
       console.error('Error re-downloading:', error)
     }
@@ -291,7 +345,7 @@ function App() {
 
   return (
     <PlayerProvider>
-      <Layout activeTab={activeTab} onTabChange={setActiveTab}>
+      <Layout activeTab={activeTab} onTabChange={handleTabChange}>
         {loading ? (
           <div className="loading-container">
             <div className="loading-spinner"></div>
