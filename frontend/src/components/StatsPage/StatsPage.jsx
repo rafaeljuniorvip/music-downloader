@@ -60,15 +60,20 @@ function StatsPage() {
     return () => clearInterval(interval)
   }, [fetchStats])
 
-  // Calculate metrics
-  const totalDownloads = stats?.totalDownloads || 0
-  const completedDownloads = stats?.completedDownloads || 0
-  const totalStorage = stats?.totalStorageUsed || 0
-  const successRate = totalDownloads > 0
-    ? (completedDownloads / totalDownloads) * 100
-    : 0
-  const avgSpeed = stats?.averageDownloadSpeed || 0
-  const topSources = stats?.topSources || []
+  // Calculate metrics from the nested API response
+  const total = stats?.total || {}
+  const totalDownloads = total.totalDownloads || 0
+  const completedDownloads = total.completed || 0
+  const failedDownloads = total.failed || 0
+  const totalStorage = total.storageUsed || 0
+  const successRate = stats?.successRate?.successRate || 0
+  const avgSpeed = total.averageSpeed || 0
+
+  // Map topSources to expected format
+  const topSources = (stats?.topSources || []).map(source => ({
+    name: source.channel,
+    count: source.downloadCount
+  }))
 
   if (loading) {
     return (
@@ -124,7 +129,7 @@ function StatsPage() {
             title="Taxa de Sucesso"
             value={formatPercentage(successRate)}
             icon="success"
-            subtitle={`${formatNumber(totalDownloads - completedDownloads)} falhas`}
+            subtitle={`${formatNumber(failedDownloads)} falhas`}
           />
           <StatCard
             title="Velocidade Media"
