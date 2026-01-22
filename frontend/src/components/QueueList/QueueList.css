@@ -8,8 +8,7 @@
 /* Toolbar */
 .queue-toolbar {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
+  flex-direction: column;
   gap: 12px;
   padding: 16px;
   background-color: var(--color-card);
@@ -17,9 +16,23 @@
   border-radius: var(--radius-md);
 }
 
+.toolbar-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
 .toolbar-search {
   flex: 1;
   min-width: 200px;
+}
+
+.toolbar-filters {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 .search-input {
@@ -64,6 +77,73 @@
   border-color: var(--color-primary);
 }
 
+.date-filter {
+  min-width: 140px;
+  padding: 10px 14px;
+  font-size: 14px;
+  color: var(--color-text);
+  background-color: var(--color-background);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.date-filter:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+/* Custom date range */
+.date-range-row {
+  padding-top: 4px;
+}
+
+.date-range-inputs {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.date-range-inputs label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+.date-input {
+  padding: 8px 12px;
+  font-size: 13px;
+  color: var(--color-text);
+  background-color: var(--color-background);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  transition: border-color 0.2s ease;
+}
+
+.date-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+/* Toolbar actions row */
+.toolbar-actions-row {
+  justify-content: space-between;
+  padding-top: 4px;
+  border-top: 1px solid var(--color-border);
+  margin-top: 4px;
+}
+
+.toolbar-actions-left,
+.toolbar-actions-right {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 .toolbar-actions {
   display: flex;
   gap: 8px;
@@ -104,6 +184,30 @@
 
 .toolbar-btn-clear {
   background-color: var(--color-text-muted, #6b7280);
+  color: #fff;
+}
+
+.toolbar-btn-select {
+  background-color: var(--color-primary, #1976d2);
+  color: #fff;
+}
+
+.toolbar-btn-select.active {
+  background-color: var(--color-text-muted, #6b7280);
+}
+
+.toolbar-btn-select-all {
+  background-color: var(--color-background, #f5f5f5);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+}
+
+.toolbar-btn-select-all:hover {
+  background-color: var(--color-bg-elevated, #e0e0e0);
+}
+
+.toolbar-btn-download-all {
+  background-color: var(--color-success, #10b981);
   color: #fff;
 }
 
@@ -204,14 +308,34 @@
 
 /* Responsive adjustments */
 @media (max-width: 600px) {
-  .queue-toolbar {
+  .toolbar-row {
     flex-direction: column;
     align-items: stretch;
   }
 
   .toolbar-search,
-  .toolbar-filter {
+  .toolbar-filter,
+  .toolbar-filters {
     min-width: 100%;
+  }
+
+  .toolbar-filters {
+    flex-direction: column;
+  }
+
+  .status-filter,
+  .date-filter {
+    width: 100%;
+  }
+
+  .toolbar-actions-row {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .toolbar-actions-left,
+  .toolbar-actions-right {
+    width: 100%;
   }
 
   .toolbar-actions {
@@ -221,5 +345,20 @@
   .toolbar-btn {
     flex: 1;
     min-width: calc(50% - 4px);
+  }
+
+  .date-range-inputs {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .date-range-inputs label {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 4px;
+  }
+
+  .date-input {
+    width: 100%;
   }
 }

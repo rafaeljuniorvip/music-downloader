@@ -1,8 +1,8 @@
 import './QueueItem.css'
 import { api } from '../../services/api'
 
-function QueueItem({ item, onPauseResume, onCancel, onRetry }) {
-  const { id, title, status, progress = 0, error, filePath, url } = item
+function QueueItem({ item, onPauseResume, onCancel, onRetry, selectable, selected, onSelect }) {
+  const { id, title, status, progress = 0, error, filePath, url, createdAt } = item
 
   // Extrai o nome do arquivo do caminho completo
   const filename = filePath ? filePath.split('/').pop() : null
@@ -21,11 +21,34 @@ function QueueItem({ item, onPauseResume, onCancel, onRetry }) {
     }
   }
 
+  const formatDate = (dateString) => {
+    if (!dateString) return ''
+    const date = new Date(dateString)
+    return date.toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    })
+  }
+
   const displayTitle = title || url || 'Carregando informacoes...'
 
   return (
-    <div className={`queue-item queue-item-${status}`}>
+    <div className={`queue-item queue-item-${status} ${selected ? 'queue-item-selected' : ''}`}>
       <div className="item-content">
+        {selectable && status === 'completed' && (
+          <div className="item-checkbox">
+            <input
+              type="checkbox"
+              checked={selected}
+              onChange={() => onSelect(id)}
+              className="select-checkbox"
+            />
+          </div>
+        )}
+
         <div className="item-info">
           <h4 className="item-title" title={displayTitle}>
             {displayTitle}
@@ -34,6 +57,9 @@ function QueueItem({ item, onPauseResume, onCancel, onRetry }) {
             <span className={`status-badge status-${status}`}>
               {statusLabels[status] || status}
             </span>
+            {createdAt && (
+              <span className="item-date">{formatDate(createdAt)}</span>
+            )}
             {error && <span className="error-text">{error}</span>}
           </div>
         </div>
