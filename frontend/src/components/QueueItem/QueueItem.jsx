@@ -1,4 +1,5 @@
 import './QueueItem.css'
+import { api } from '../../services/api'
 
 function QueueItem({ item, onPauseResume, onCancel, onRetry }) {
   const { id, title, status, progress = 0, error, filePath, url } = item
@@ -16,7 +17,7 @@ function QueueItem({ item, onPauseResume, onCancel, onRetry }) {
 
   const handleDownloadFile = () => {
     if (filename) {
-      window.open(`/api/files/${encodeURIComponent(filename)}`, '_blank')
+      window.open(api.getDownloadUrl(filename), '_blank')
     }
   }
 

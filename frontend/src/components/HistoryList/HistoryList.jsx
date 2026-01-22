@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react'
 import './HistoryList.css'
+import { api } from '../../services/api'
 
 function HistoryList({ items, onRedownload, onClearHistory }) {
   const [searchTerm, setSearchTerm] = useState('')
@@ -40,7 +41,7 @@ function HistoryList({ items, onRedownload, onClearHistory }) {
 
   const handleDownloadFile = (filename) => {
     if (filename) {
-      window.open(`/api/files/${encodeURIComponent(filename)}`, '_blank')
+      window.open(api.getDownloadUrl(filename), '_blank')
     }
   }
 
