@@ -154,10 +154,10 @@ function HistoryList({ items, onRedownload, onClearHistory }) {
                   {formatDate(item.completedAt || item.createdAt)}
                 </td>
                 <td className="actions-cell">
-                  {item.status === 'completed' && item.filename && (
+                  {item.status === 'completed' && (item.file_path || item.filePath) && (
                     <button
                       className="table-btn table-btn-download"
-                      onClick={() => handleDownloadFile(item.filename)}
+                      onClick={() => handleDownloadFile((item.file_path || item.filePath).split('/').pop())}
                       title="Baixar arquivo"
                     >
                       Baixar

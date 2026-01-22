@@ -1,7 +1,10 @@
 import './QueueItem.css'
 
 function QueueItem({ item, onPauseResume, onCancel, onRetry }) {
-  const { id, title, status, progress = 0, error, filename, url } = item
+  const { id, title, status, progress = 0, error, filePath, url } = item
+
+  // Extrai o nome do arquivo do caminho completo
+  const filename = filePath ? filePath.split('/').pop() : null
 
   const statusLabels = {
     waiting: 'Aguardando',
