@@ -40,7 +40,7 @@ function HistoryList({ items, onRedownload, onClearHistory }) {
 
   const handleDownloadFile = (filename) => {
     if (filename) {
-      window.open(`/api/download/${encodeURIComponent(filename)}`, '_blank')
+      window.open(`/api/files/${encodeURIComponent(filename)}`, '_blank')
     }
   }
 
