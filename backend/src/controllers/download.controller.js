@@ -381,10 +381,28 @@ export const downloadController = {
       const total = await historyService.count({ status, type, search });
       const stats = await historyService.getStats();
 
+      // Transforma snake_case para camelCase
+      const transformedHistory = history.map(item => ({
+        id: item.id,
+        url: item.url,
+        title: item.title,
+        status: item.status,
+        createdAt: item.created_at,
+        completedAt: item.finished_at,
+        filePath: item.file_path,
+        errorMessage: item.error_message,
+        type: item.type,
+        playlistId: item.playlist_id,
+        progress: item.progress,
+        fileSize: item.file_size,
+        downloadSpeed: item.download_speed,
+        channel: item.channel
+      }));
+
       res.json({
         success: true,
         data: {
-          items: history,
+          items: transformedHistory,
           total,
           stats,
           pagination: {
