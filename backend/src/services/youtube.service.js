@@ -208,7 +208,9 @@ class YoutubeService extends EventEmitter {
           if (items.length === 1) {
             resolve({ type: 'video', items: items });
           } else {
-            resolve({ type: 'playlist', items: items });
+            // Extrai nome da playlist do primeiro item (yt-dlp inclui em cada item)
+            const playlistTitle = items[0]?.playlist_title || items[0]?.playlist || 'Playlist';
+            resolve({ type: 'playlist', items: items, playlistTitle });
           }
         } catch (error) {
           reject(new Error('Erro ao parsear informações: ' + error.message));

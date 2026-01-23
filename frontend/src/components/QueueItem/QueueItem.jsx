@@ -1,7 +1,7 @@
 import './QueueItem.css'
 import { api } from '../../services/api'
 
-function QueueItem({ item, onPauseResume, onCancel, onRetry, selectable, selected, onSelect }) {
+function QueueItem({ item, onPauseResume, onCancel, onRetry, selectable, selected, onSelect, compact = false }) {
   const { id, title, status, progress = 0, error, filePath, url, createdAt } = item
 
   // Extrai o nome do arquivo do caminho completo
@@ -36,7 +36,7 @@ function QueueItem({ item, onPauseResume, onCancel, onRetry, selectable, selecte
   const displayTitle = title || url || 'Carregando informacoes...'
 
   return (
-    <div className={`queue-item queue-item-${status} ${selected ? 'queue-item-selected' : ''}`}>
+    <div className={`queue-item queue-item-${status} ${selected ? 'queue-item-selected' : ''} ${compact ? 'queue-item-compact' : ''}`}>
       <div className="item-content">
         {selectable && status === 'completed' && (
           <div className="item-checkbox">

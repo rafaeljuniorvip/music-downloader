@@ -248,6 +248,48 @@
   text-align: right;
 }
 
+/* Compact mode for playlist items */
+.queue-item-compact {
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background-color: var(--color-background);
+}
+
+.queue-item-compact .item-title {
+  font-size: 13px;
+}
+
+.queue-item-compact .item-meta {
+  gap: 6px;
+}
+
+.queue-item-compact .status-badge {
+  font-size: 10px;
+  padding: 2px 6px;
+}
+
+.queue-item-compact .item-date {
+  font-size: 11px;
+}
+
+.queue-item-compact .action-btn {
+  width: 30px;
+  height: 30px;
+}
+
+.queue-item-compact .action-icon {
+  width: 14px;
+  height: 14px;
+}
+
+.queue-item-compact .progress-container {
+  margin-top: 6px;
+}
+
+.queue-item-compact .progress-bar {
+  height: 4px;
+}
+
 /* Responsive */
 @media (max-width: 480px) {
   .queue-item {

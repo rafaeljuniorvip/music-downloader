@@ -1,5 +1,6 @@
 import { useState, useMemo, useCallback } from 'react'
 import QueueItem from '../QueueItem/QueueItem'
+import PlaylistFolder from '../PlaylistFolder/PlaylistFolder'
 import { api } from '../../services/api'
 import './QueueList.css'
 
@@ -120,6 +121,36 @@ function QueueList({
   )
   const completedItems = filteredItems.filter(item => item.status === 'completed')
   const errorItems = filteredItems.filter(item => item.status === 'error' || item.status === 'cancelled')
+
+  // Group items by playlist
+  const groupByPlaylist = useCallback((itemsList) => {
+    const playlists = new Map()
+    const singles = []
+
+    itemsList.forEach(item => {
+      if (item.playlistId) {
+        if (!playlists.has(item.playlistId)) {
+          playlists.set(item.playlistId, {
+            id: item.playlistId,
+            name: item.playlistName || 'Playlist',
+            items: []
+          })
+        }
+        playlists.get(item.playlistId).items.push(item)
+      } else {
+        singles.push(item)
+      }
+    })
+
+    return {
+      playlists: Array.from(playlists.values()),
+      singles
+    }
+  }, [])
+
+  const activeGrouped = useMemo(() => groupByPlaylist(activeItems), [activeItems, groupByPlaylist])
+  const completedGrouped = useMemo(() => groupByPlaylist(completedItems), [completedItems, groupByPlaylist])
+  const errorGrouped = useMemo(() => groupByPlaylist(errorItems), [errorItems, groupByPlaylist])
 
   // Selection handlers
   const handleSelect = useCallback((id) => {
@@ -347,7 +378,19 @@ function QueueList({
                 Em andamento ({activeItems.length})
               </h3>
               <div className="queue-items">
-                {activeItems.map(item => (
+                {/* Playlists em andamento */}
+                {activeGrouped.playlists.map(playlist => (
+                  <PlaylistFolder
+                    key={playlist.id}
+                    playlist={playlist}
+                    onPauseResume={onPauseResume}
+                    onCancel={onCancel}
+                    onRetry={onRetry}
+                    selectable={false}
+                  />
+                ))}
+                {/* Videos avulsos em andamento */}
+                {activeGrouped.singles.map(item => (
                   <QueueItem
                     key={item.id}
                     item={item}
@@ -367,7 +410,21 @@ function QueueList({
                 Concluidos ({completedItems.length})
               </h3>
               <div className="queue-items">
-                {completedItems.map(item => (
+                {/* Playlists concluidas */}
+                {completedGrouped.playlists.map(playlist => (
+                  <PlaylistFolder
+                    key={playlist.id}
+                    playlist={playlist}
+                    onPauseResume={onPauseResume}
+                    onCancel={onCancel}
+                    onRetry={onRetry}
+                    selectable={selectMode}
+                    selectedItems={selectedItems}
+                    onSelect={handleSelect}
+                  />
+                ))}
+                {/* Videos avulsos concluidos */}
+                {completedGrouped.singles.map(item => (
                   <QueueItem
                     key={item.id}
                     item={item}
@@ -389,7 +446,19 @@ function QueueList({
                 Com erro ({errorItems.length})
               </h3>
               <div className="queue-items">
-                {errorItems.map(item => (
+                {/* Playlists com erro */}
+                {errorGrouped.playlists.map(playlist => (
+                  <PlaylistFolder
+                    key={playlist.id}
+                    playlist={playlist}
+                    onPauseResume={onPauseResume}
+                    onCancel={onCancel}
+                    onRetry={onRetry}
+                    selectable={false}
+                  />
+                ))}
+                {/* Videos avulsos com erro */}
+                {errorGrouped.singles.map(item => (
                   <QueueItem
                     key={item.id}
                     item={item}

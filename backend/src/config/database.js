@@ -65,6 +65,9 @@ export async function initDatabase() {
         IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'downloads' AND column_name = 'channel') THEN
           ALTER TABLE downloads ADD COLUMN channel VARCHAR(255);
         END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'downloads' AND column_name = 'playlist_name') THEN
+          ALTER TABLE downloads ADD COLUMN playlist_name VARCHAR(500);
+        END IF;
       END $$;
     `);
 

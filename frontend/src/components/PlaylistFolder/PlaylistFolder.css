@@ -1,0 +1,216 @@
+.playlist-folder {
+  background-color: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.playlist-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background-color: var(--color-bg-elevated);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  gap: 12px;
+}
+
+.playlist-header:hover {
+  background-color: var(--color-bg);
+}
+
+.playlist-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+
+.folder-icon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23666'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z'/%3E%3C/svg%3E");
+  background-size: contain;
+  background-repeat: no-repeat;
+  transition: transform 0.2s ease;
+}
+
+.folder-icon.open {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%231976d2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1M5 19h14a2 2 0 002-2v-5a2 2 0 00-2-2H9a2 2 0 00-2 2v5a2 2 0 01-2 2z'/%3E%3C/svg%3E");
+}
+
+.playlist-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.playlist-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-text);
+  margin: 0 0 4px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.playlist-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.playlist-count {
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.playlist-status {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.status-tag {
+  font-size: 10px;
+  font-weight: 500;
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.status-tag.status-completed {
+  color: var(--color-success);
+  background-color: var(--color-success-subtle);
+}
+
+.status-tag.status-downloading {
+  color: var(--color-primary, #1976d2);
+  background-color: rgba(25, 118, 210, 0.1);
+}
+
+.status-tag.status-pending {
+  color: var(--color-text-muted);
+  background-color: var(--color-bg);
+}
+
+.status-tag.status-paused {
+  color: var(--color-warning, #f59e0b);
+  background-color: rgba(245, 158, 11, 0.1);
+}
+
+.status-tag.status-error {
+  color: var(--color-error);
+  background-color: var(--color-error-subtle);
+}
+
+.playlist-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* Progress bar mini */
+.playlist-progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.progress-bar-mini {
+  width: 80px;
+  height: 6px;
+  background-color: var(--color-border);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-fill-mini {
+  height: 100%;
+  background-color: var(--color-primary, #1976d2);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.progress-text-mini {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  min-width: 32px;
+}
+
+/* Buttons */
+.playlist-btn {
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.playlist-btn:hover {
+  opacity: 0.9;
+}
+
+.playlist-btn-select {
+  background-color: var(--color-background);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border);
+}
+
+.playlist-btn-select:hover {
+  background-color: var(--color-bg-elevated);
+}
+
+.playlist-btn-download {
+  background-color: var(--color-success, #10b981);
+  color: #fff;
+}
+
+/* Playlist items container */
+.playlist-items {
+  border-top: 1px solid var(--color-border);
+  padding: 8px;
+  background-color: var(--color-card);
+}
+
+.playlist-items .queue-item {
+  margin-bottom: 4px;
+  border-radius: var(--radius-sm);
+}
+
+.playlist-items .queue-item:last-child {
+  margin-bottom: 0;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .playlist-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .playlist-header-right {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .playlist-progress {
+    flex: 1;
+  }
+
+  .progress-bar-mini {
+    flex: 1;
+    max-width: 120px;
+  }
+}

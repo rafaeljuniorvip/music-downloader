@@ -4,12 +4,12 @@ class HistoryService {
   /**
    * Adiciona novo registro ao histórico
    */
-  async add({ id, url, title, type = 'video', playlistId = null, channel = null }) {
+  async add({ id, url, title, type = 'video', playlistId = null, playlistName = null, channel = null }) {
     const result = await db.query(
-      `INSERT INTO downloads (id, url, title, status, type, playlist_id, channel)
-       VALUES ($1, $2, $3, 'pending', $4, $5, $6)
+      `INSERT INTO downloads (id, url, title, status, type, playlist_id, playlist_name, channel)
+       VALUES ($1, $2, $3, 'pending', $4, $5, $6, $7)
        RETURNING *`,
-      [id, url, title, type, playlistId, channel]
+      [id, url, title, type, playlistId, playlistName, channel]
     );
     return result.rows[0];
   }

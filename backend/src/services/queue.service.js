@@ -75,6 +75,7 @@ class QueueService extends EventEmitter {
       const items = [];
       const skippedItems = [];
       const playlistId = type === 'playlist' ? uuidv4() : null;
+      const playlistName = info.playlistTitle || null;
 
       for (const videoInfo of info.items) {
         const videoUrl = videoInfo.url || videoInfo.webpage_url || `https://www.youtube.com/watch?v=${videoInfo.id}`;
@@ -134,6 +135,7 @@ class QueueService extends EventEmitter {
           createdAt: new Date().toISOString(),
           type: type,
           playlistId,
+          playlistName,
           thumbnail: videoInfo.thumbnail || null,
           duration: videoInfo.duration || null,
           channel: channel
@@ -149,6 +151,7 @@ class QueueService extends EventEmitter {
           title: item.title,
           type,
           playlistId,
+          playlistName,
           channel
         });
       }

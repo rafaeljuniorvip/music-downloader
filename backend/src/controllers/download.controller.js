@@ -393,6 +393,7 @@ export const downloadController = {
         errorMessage: item.error_message,
         type: item.type,
         playlistId: item.playlist_id,
+        playlistName: item.playlist_name,
         progress: item.progress,
         fileSize: item.file_size,
         downloadSpeed: item.download_speed,
