@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback } from 'react'
+import HistoryPlaylistFolder from '../HistoryPlaylistFolder/HistoryPlaylistFolder'
 import './HistoryList.css'
 import { api } from '../../services/api'
 
@@ -21,6 +22,7 @@ function HistoryList({ items, onRedownload, onClearHistory }) {
   const [sortOrder, setSortOrder] = useState('desc')
   const [selectedItems, setSelectedItems] = useState(new Set())
   const [selectMode, setSelectMode] = useState(false)
+  const [viewMode, setViewMode] = useState('grouped') // 'grouped' or 'list'
 
   // Helper function to check if date matches filter
   const dateMatchesFilter = useCallback((dateString) => {
@@ -73,7 +75,8 @@ function HistoryList({ items, onRedownload, onClearHistory }) {
       const term = searchTerm.toLowerCase()
       result = result.filter(item =>
         (item.title && item.title.toLowerCase().includes(term)) ||
-        (item.url && item.url.toLowerCase().includes(term))
+        (item.url && item.url.toLowerCase().includes(term)) ||
+        (item.playlistName && item.playlistName.toLowerCase().includes(term))
       )
     }
 
@@ -98,6 +101,32 @@ function HistoryList({ items, onRedownload, onClearHistory }) {
 
     return result
   }, [items, searchTerm, statusFilter, dateMatchesFilter, sortBy, sortOrder])
+
+  // Group items by playlist
+  const groupedItems = useMemo(() => {
+    const playlists = new Map()
+    const singles = []
+
+    filteredItems.forEach(item => {
+      if (item.playlistId) {
+        if (!playlists.has(item.playlistId)) {
+          playlists.set(item.playlistId, {
+            id: item.playlistId,
+            name: item.playlistName || 'Playlist',
+            items: []
+          })
+        }
+        playlists.get(item.playlistId).items.push(item)
+      } else {
+        singles.push(item)
+      }
+    })
+
+    return {
+      playlists: Array.from(playlists.values()),
+      singles
+    }
+  }, [filteredItems])
 
   // Itens que podem ser baixados (status completed com filePath)
   const downloadableItems = useMemo(() =>
@@ -188,6 +217,9 @@ function HistoryList({ items, onRedownload, onClearHistory }) {
   const allDownloadableSelected = downloadableItems.length > 0 &&
     downloadableItems.every(item => selectedItems.has(item.id))
 
+  // Conta playlists
+  const playlistCount = groupedItems.playlists.length
+
   if (!items || items.length === 0) {
     return (
       <div className="history-empty">
@@ -237,6 +269,24 @@ function HistoryList({ items, onRedownload, onClearHistory }) {
                 </option>
               ))}
             </select>
+
+            {/* View mode toggle */}
+            <div className="view-toggle">
+              <button
+                className={`view-btn ${viewMode === 'grouped' ? 'active' : ''}`}
+                onClick={() => setViewMode('grouped')}
+                title="Visualizacao agrupada"
+              >
+                <span className="view-icon view-icon-grid"></span>
+              </button>
+              <button
+                className={`view-btn ${viewMode === 'list' ? 'active' : ''}`}
+                onClick={() => setViewMode('list')}
+                title="Visualizacao em lista"
+              >
+                <span className="view-icon view-icon-list"></span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -304,6 +354,7 @@ function HistoryList({ items, onRedownload, onClearHistory }) {
           <div className="toolbar-actions-right">
             <span className="results-count">
               {filteredItems.length} registro{filteredItems.length !== 1 ? 's' : ''}
+              {playlistCount > 0 && ` (${playlistCount} playlist${playlistCount > 1 ? 's' : ''})`}
               {selectMode && selectedCount > 0 && ` - ${selectedCount} selecionado(s)`}
             </span>
             <button
@@ -317,90 +368,176 @@ function HistoryList({ items, onRedownload, onClearHistory }) {
         </div>
       </div>
 
-      <div className="history-table-wrapper">
-        <table className="history-table">
-          <thead>
-            <tr>
-              {selectMode && <th className="checkbox-col"></th>}
-              <th
-                className={`sortable ${sortBy === 'title' ? 'sorted' : ''}`}
-                onClick={() => toggleSort('title')}
-              >
-                Titulo
-                <span className={`sort-icon ${sortOrder}`}></span>
-              </th>
-              <th>Status</th>
-              <th
-                className={`sortable ${sortBy === 'date' ? 'sorted' : ''}`}
-                onClick={() => toggleSort('date')}
-              >
-                Data
-                <span className={`sort-icon ${sortOrder}`}></span>
-              </th>
-              <th>Acoes</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredItems.map(item => {
-              const filePath = item.filePath || item.file_path
-              const isDownloadable = item.status === 'completed' && filePath
-              const isSelected = selectedItems.has(item.id)
-
-              return (
-                <tr key={item.id} className={isSelected ? 'row-selected' : ''}>
-                  {selectMode && (
-                    <td className="checkbox-col">
-                      {isDownloadable && (
-                        <input
-                          type="checkbox"
-                          checked={isSelected}
-                          onChange={() => handleSelect(item.id)}
-                          className="select-checkbox"
-                        />
-                      )}
-                    </td>
-                  )}
-                  <td className="title-cell">
-                    <span className="cell-title" title={item.title || item.url}>
-                      {item.title || item.url}
-                    </span>
-                  </td>
-                  <td>
-                    <span className={`table-badge table-badge-${item.status}`}>
-                      {item.status === 'completed' ? 'Concluido' : 'Erro'}
-                    </span>
-                  </td>
-                  <td className="date-cell">
-                    {formatDate(item.completedAt || item.createdAt)}
-                  </td>
-                  <td className="actions-cell">
-                    {isDownloadable && (
-                      <button
-                        className="table-btn table-btn-download"
-                        onClick={() => handleDownloadFile(filePath.split('/').pop())}
-                        title="Baixar arquivo"
-                      >
-                        Baixar
-                      </button>
-                    )}
-                    <button
-                      className="table-btn table-btn-redownload"
-                      onClick={() => onRedownload(item.url)}
-                      title="Baixar novamente"
-                    >
-                      Re-baixar
-                    </button>
-                  </td>
-                </tr>
-              )
-            })}
-          </tbody>
-        </table>
-      </div>
-
-      {filteredItems.length === 0 && (items.length > 0) && (
+      {filteredItems.length === 0 ? (
         <div className="no-results">
           <p>Nenhum resultado encontrado para os filtros aplicados</p>
+        </div>
+      ) : viewMode === 'grouped' ? (
+        /* Grouped View */
+        <div className="history-grouped">
+          {/* Playlists */}
+          {groupedItems.playlists.map(playlist => (
+            <HistoryPlaylistFolder
+              key={playlist.id}
+              playlist={playlist}
+              onRedownload={onRedownload}
+              onDownloadFile={handleDownloadFile}
+              selectable={selectMode}
+              selectedItems={selectedItems}
+              onSelect={handleSelect}
+              formatDate={formatDate}
+            />
+          ))}
+
+          {/* Singles */}
+          {groupedItems.singles.length > 0 && (
+            <div className="history-singles">
+              {groupedItems.playlists.length > 0 && (
+                <h4 className="singles-title">Musicas Avulsas ({groupedItems.singles.length})</h4>
+              )}
+              <div className="history-cards">
+                {groupedItems.singles.map(item => {
+                  const filePath = item.filePath || item.file_path
+                  const isDownloadable = item.status === 'completed' && filePath
+                  const isSelected = selectedItems.has(item.id)
+
+                  return (
+                    <div key={item.id} className={`history-card ${isSelected ? 'card-selected' : ''}`}>
+                      {selectMode && isDownloadable && (
+                        <div className="card-checkbox">
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => handleSelect(item.id)}
+                            className="select-checkbox"
+                          />
+                        </div>
+                      )}
+                      <div className="card-content">
+                        <h4 className="card-title" title={item.title || item.url}>
+                          {item.title || item.url}
+                        </h4>
+                        <div className="card-meta">
+                          <span className={`card-badge card-badge-${item.status}`}>
+                            {item.status === 'completed' ? 'Concluido' : 'Erro'}
+                          </span>
+                          <span className="card-date">{formatDate(item.completedAt || item.createdAt)}</span>
+                        </div>
+                      </div>
+                      <div className="card-actions">
+                        {isDownloadable && (
+                          <button
+                            className="card-btn card-btn-download"
+                            onClick={() => handleDownloadFile(filePath.split('/').pop())}
+                            title="Baixar arquivo"
+                          >
+                            <span className="btn-icon btn-icon-download"></span>
+                          </button>
+                        )}
+                        <button
+                          className="card-btn card-btn-redownload"
+                          onClick={() => onRedownload(item.url)}
+                          title="Baixar novamente"
+                        >
+                          <span className="btn-icon btn-icon-refresh"></span>
+                        </button>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+      ) : (
+        /* List View (Table) */
+        <div className="history-table-wrapper">
+          <table className="history-table">
+            <thead>
+              <tr>
+                {selectMode && <th className="checkbox-col"></th>}
+                <th
+                  className={`sortable ${sortBy === 'title' ? 'sorted' : ''}`}
+                  onClick={() => toggleSort('title')}
+                >
+                  Titulo
+                  <span className={`sort-icon ${sortOrder}`}></span>
+                </th>
+                <th>Playlist</th>
+                <th>Status</th>
+                <th
+                  className={`sortable ${sortBy === 'date' ? 'sorted' : ''}`}
+                  onClick={() => toggleSort('date')}
+                >
+                  Data
+                  <span className={`sort-icon ${sortOrder}`}></span>
+                </th>
+                <th>Acoes</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredItems.map(item => {
+                const filePath = item.filePath || item.file_path
+                const isDownloadable = item.status === 'completed' && filePath
+                const isSelected = selectedItems.has(item.id)
+
+                return (
+                  <tr key={item.id} className={isSelected ? 'row-selected' : ''}>
+                    {selectMode && (
+                      <td className="checkbox-col">
+                        {isDownloadable && (
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => handleSelect(item.id)}
+                            className="select-checkbox"
+                          />
+                        )}
+                      </td>
+                    )}
+                    <td className="title-cell">
+                      <span className="cell-title" title={item.title || item.url}>
+                        {item.title || item.url}
+                      </span>
+                    </td>
+                    <td className="playlist-cell">
+                      {item.playlistName ? (
+                        <span className="playlist-tag">{item.playlistName}</span>
+                      ) : (
+                        <span className="no-playlist">-</span>
+                      )}
+                    </td>
+                    <td>
+                      <span className={`table-badge table-badge-${item.status}`}>
+                        {item.status === 'completed' ? 'Concluido' : 'Erro'}
+                      </span>
+                    </td>
+                    <td className="date-cell">
+                      {formatDate(item.completedAt || item.createdAt)}
+                    </td>
+                    <td className="actions-cell">
+                      {isDownloadable && (
+                        <button
+                          className="table-btn table-btn-download"
+                          onClick={() => handleDownloadFile(filePath.split('/').pop())}
+                          title="Baixar arquivo"
+                        >
+                          Baixar
+                        </button>
+                      )}
+                      <button
+                        className="table-btn table-btn-redownload"
+                        onClick={() => onRedownload(item.url)}
+                        title="Baixar novamente"
+                      >
+                        Re-baixar
+                      </button>
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
         </div>
       )}
     </div>
