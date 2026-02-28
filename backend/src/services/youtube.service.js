@@ -287,6 +287,7 @@ class YoutubeService extends EventEmitter {
 
       const args = [
         ...COMMON_ARGS,
+        '-f', 'bestaudio/best',
         '--extract-audio',
         '--audio-format', audioFormat,
         '--audio-quality', audioQuality,
