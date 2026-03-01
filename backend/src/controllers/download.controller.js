@@ -62,6 +62,141 @@ queueService.on('removed', (data) => broadcastSSE('removed', data));
 
 export const downloadController = {
   /**
+   * GET /api/v1/download/:id
+   * Retorna status de um download específico (queue ou histórico)
+   */
+  async getById(req, res) {
+    try {
+      const { id } = req.params;
+
+      // Primeiro verifica na fila em memória
+      const queueItem = queueService.getItem(id);
+      if (queueItem) {
+        // Se completou, pega info do arquivo
+        let fileSize = null;
+        if (queueItem.filePath && existsSync(queueItem.filePath)) {
+          try {
+            fileSize = statSync(queueItem.filePath).size;
+          } catch (e) { /* ignore */ }
+        }
+        return res.json({
+          success: true,
+          data: {
+            id: queueItem.id,
+            url: queueItem.url,
+            title: queueItem.title,
+            status: queueItem.status,
+            progress: queueItem.progress,
+            filePath: queueItem.filePath || null,
+            fileSize,
+            error: queueItem.error || null,
+            createdAt: queueItem.createdAt,
+            finishedAt: queueItem.finishedAt || null,
+            channel: queueItem.channel || null
+          }
+        });
+      }
+
+      // Fallback para histórico no banco
+      const historyItem = await historyService.getById(id);
+      if (historyItem) {
+        let fileSize = historyItem.file_size || null;
+        if (!fileSize && historyItem.file_path && existsSync(historyItem.file_path)) {
+          try {
+            fileSize = statSync(historyItem.file_path).size;
+          } catch (e) { /* ignore */ }
+        }
+        return res.json({
+          success: true,
+          data: {
+            id: historyItem.id,
+            url: historyItem.url,
+            title: historyItem.title,
+            status: historyItem.status,
+            progress: historyItem.progress,
+            filePath: historyItem.file_path || null,
+            fileSize,
+            error: historyItem.error_message || null,
+            createdAt: historyItem.created_at,
+            finishedAt: historyItem.finished_at || null,
+            channel: historyItem.channel || null
+          }
+        });
+      }
+
+      res.status(404).json({ success: false, error: 'Download não encontrado' });
+    } catch (error) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  },
+
+  /**
+   * GET /api/v1/stream/:id
+   * Serve o arquivo MP3 de um download por ID
+   */
+  async serveFileById(req, res) {
+    try {
+      const { id } = req.params;
+
+      // Verifica na fila em memória
+      let filePath = null;
+      const queueItem = queueService.getItem(id);
+      if (queueItem && queueItem.filePath) {
+        filePath = queueItem.filePath;
+      }
+
+      // Fallback para histórico no banco
+      if (!filePath) {
+        const historyItem = await historyService.getById(id);
+        if (historyItem && historyItem.file_path) {
+          filePath = historyItem.file_path;
+        }
+      }
+
+      if (!filePath) {
+        return res.status(404).json({ success: false, error: 'Download não encontrado ou arquivo não disponível' });
+      }
+
+      if (!existsSync(filePath)) {
+        return res.status(404).json({ success: false, error: 'Arquivo não encontrado no disco' });
+      }
+
+      const stat = statSync(filePath);
+      const fileSize = stat.size;
+      const filename = filePath.split('/').pop();
+
+      // Suporte a range requests
+      const range = req.headers.range;
+      if (range) {
+        const parts = range.replace(/bytes=/, '').split('-');
+        const start = parseInt(parts[0], 10);
+        const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+        const chunkSize = end - start + 1;
+
+        res.writeHead(206, {
+          'Content-Range': `bytes ${start}-${end}/${fileSize}`,
+          'Accept-Ranges': 'bytes',
+          'Content-Length': chunkSize,
+          'Content-Type': 'audio/mpeg',
+          'Content-Disposition': `inline; filename="${encodeURIComponent(filename)}"`
+        });
+        createReadStream(filePath, { start, end }).pipe(res);
+      } else {
+        res.writeHead(200, {
+          'Content-Length': fileSize,
+          'Content-Type': 'audio/mpeg',
+          'Content-Disposition': `attachment; filename="${encodeURIComponent(filename)}"`
+        });
+        createReadStream(filePath).pipe(res);
+      }
+    } catch (error) {
+      if (!res.headersSent) {
+        res.status(500).json({ success: false, error: error.message });
+      }
+    }
+  },
+
+  /**
    * GET /api/download/preview
    * Obtém preview de um vídeo sem baixar
    * Query: { url: string }
