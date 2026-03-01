@@ -20,7 +20,7 @@ services:
       - DB_NAME=music_downloader
       - DB_USER=postgres
       - DB_PASSWORD=admin123
-      - YT_DLP_PATH=/usr/local/bin/yt-dlp
+      - YT_DLP_PATH=/usr/bin/yt-dlp
       - DOWNLOADS_DIR=/app/downloads
       - COOKIES_FILE=/app/cookies/youtube-cookies.txt
       - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
