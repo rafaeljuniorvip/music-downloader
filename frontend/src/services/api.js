@@ -3,18 +3,34 @@ const API_BASE = import.meta.env.PROD
   ? 'https://api.downytube.papelaria.vip/api'
   : '/api'
 
+const TOKEN_KEY = 'music-downloader-token'
+
+function getToken() {
+  return localStorage.getItem(TOKEN_KEY)
+}
+
 async function request(endpoint, options = {}) {
   const url = `${API_BASE}${endpoint}`
+  const token = getToken()
 
   const config = {
     headers: {
       'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...options.headers
     },
     ...options
   }
 
   const response = await fetch(url, config)
+
+  if (response.status === 401) {
+    // Token expired or invalid - clear and redirect to login
+    localStorage.removeItem(TOKEN_KEY)
+    localStorage.removeItem('music-downloader-user')
+    window.location.reload()
+    throw new Error('Sessao expirada')
+  }
 
   if (!response.ok) {
     const error = await response.json().catch(() => ({ error: 'Erro desconhecido' }))
@@ -121,7 +137,43 @@ export const api = {
   },
 
   // Stream operations
-  getStreamUrl: (videoId) => `${API_BASE}/stream/${videoId}`
+  getStreamUrl: (videoId) => `${API_BASE}/stream/${videoId}`,
+
+  // Auth operations
+  googleLogin: (credential) =>
+    request('/auth/google', {
+      method: 'POST',
+      body: JSON.stringify({ credential })
+    }),
+
+  getMe: () => request('/auth/me'),
+
+  // Users operations (admin)
+  getUsers: () => request('/users'),
+
+  approveUser: (id) =>
+    request(`/users/${id}/approve`, { method: 'POST' }),
+
+  deleteUser: (id) =>
+    request(`/users/${id}`, { method: 'DELETE' }),
+
+  updateUserRole: (id, role) =>
+    request(`/users/${id}/role`, {
+      method: 'PUT',
+      body: JSON.stringify({ role })
+    }),
+
+  // API Keys operations (admin)
+  getApiKeys: () => request('/api-keys'),
+
+  createApiKey: (name) =>
+    request('/api-keys', {
+      method: 'POST',
+      body: JSON.stringify({ name })
+    }),
+
+  revokeApiKey: (id) =>
+    request(`/api-keys/${id}`, { method: 'DELETE' })
 }
 
 export default api

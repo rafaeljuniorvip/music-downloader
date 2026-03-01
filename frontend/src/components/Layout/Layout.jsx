@@ -1,7 +1,7 @@
 import { useTheme } from '../../hooks/useTheme'
 import './Layout.css'
 
-function Layout({ children, activeTab, onTabChange }) {
+function Layout({ children, activeTab, onTabChange, user, onLogout }) {
   const { theme, toggleTheme, isDark } = useTheme()
 
   const menuItems = [
@@ -11,6 +11,13 @@ function Layout({ children, activeTab, onTabChange }) {
     { id: 'stats', label: 'Estatisticas', icon: 'chart' },
     { id: 'settings', label: 'Configuracoes', icon: 'settings' }
   ]
+
+  const adminItems = [
+    { id: 'users', label: 'Usuarios', icon: 'users' },
+    { id: 'api-keys', label: 'API Keys', icon: 'key' }
+  ]
+
+  const isAdmin = user?.role === 'admin'
 
   return (
     <div className="layout">
@@ -29,8 +36,47 @@ function Layout({ children, activeTab, onTabChange }) {
               <span className="nav-label">{item.label}</span>
             </button>
           ))}
+          {isAdmin && (
+            <>
+              <div className="nav-separator">
+                <span className="nav-separator-label">Admin</span>
+              </div>
+              {adminItems.map(item => (
+                <button
+                  key={item.id}
+                  className={`nav-item ${activeTab === item.id ? 'active' : ''}`}
+                  onClick={() => onTabChange(item.id)}
+                >
+                  <span className={`nav-icon nav-icon-${item.icon}`}></span>
+                  <span className="nav-label">{item.label}</span>
+                </button>
+              ))}
+            </>
+          )}
         </nav>
         <div className="sidebar-footer">
+          {user && (
+            <div className="user-info">
+              {user.picture ? (
+                <img src={user.picture} alt="" className="user-avatar" referrerPolicy="no-referrer" />
+              ) : (
+                <div className="user-avatar-placeholder">
+                  {(user.name || user.email || '?')[0].toUpperCase()}
+                </div>
+              )}
+              <div className="user-details">
+                <span className="user-name">{user.name || user.email}</span>
+                {user.role === 'admin' && <span className="user-badge">admin</span>}
+              </div>
+              <button className="btn-logout-sidebar" onClick={onLogout} title="Sair">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" />
+                  <polyline points="16 17 21 12 16 7" />
+                  <line x1="21" y1="12" x2="9" y2="12" />
+                </svg>
+              </button>
+            </div>
+          )}
           <button
             className="theme-toggle"
             onClick={toggleTheme}
@@ -51,6 +97,8 @@ function Layout({ children, activeTab, onTabChange }) {
             {activeTab === 'history' && 'Historico'}
             {activeTab === 'stats' && 'Estatisticas'}
             {activeTab === 'settings' && 'Configuracoes'}
+            {activeTab === 'users' && 'Usuarios'}
+            {activeTab === 'api-keys' && 'API Keys'}
           </h2>
         </header>
         <div className="content-body">

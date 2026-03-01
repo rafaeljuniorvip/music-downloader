@@ -86,6 +86,43 @@ export async function initDatabase() {
       )
     `);
 
+    // Cria tabela de usuarios
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS users (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        email VARCHAR(255) UNIQUE NOT NULL,
+        name VARCHAR(255),
+        picture TEXT,
+        role VARCHAR(20) DEFAULT 'user',
+        approved BOOLEAN DEFAULT false,
+        google_id VARCHAR(255) UNIQUE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        last_login TIMESTAMP
+      )
+    `);
+
+    // Seed super-admin
+    await client.query(`
+      INSERT INTO users (email, name, role, approved)
+      VALUES ('rafaeljrssg@gmail.com', 'Rafael Junior', 'admin', true)
+      ON CONFLICT (email) DO NOTHING
+    `);
+
+    // Cria tabela de API keys
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS api_keys (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        name VARCHAR(255) NOT NULL,
+        key_hash VARCHAR(64) NOT NULL UNIQUE,
+        key_prefix VARCHAR(12) NOT NULL,
+        user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+        active BOOLEAN DEFAULT true,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        last_used TIMESTAMP,
+        expires_at TIMESTAMP
+      )
+    `);
+
     console.log('Tabelas criadas/verificadas com sucesso');
   } finally {
     client.release();

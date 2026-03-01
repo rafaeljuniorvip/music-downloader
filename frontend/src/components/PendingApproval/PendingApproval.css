@@ -1,0 +1,82 @@
+.pending-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: var(--color-bg, #f5f5f5);
+  padding: 1rem;
+}
+
+.pending-card {
+  background: var(--color-card, #fff);
+  border: 1px solid var(--color-border, #e0e0e0);
+  border-radius: 12px;
+  padding: 3rem 2.5rem;
+  max-width: 440px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+}
+
+.pending-icon {
+  color: var(--color-warning, #ff9800);
+  margin-bottom: 1rem;
+}
+
+.pending-card h2 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--color-text, #333);
+  margin: 0 0 1rem;
+}
+
+.pending-card p {
+  font-size: 0.9rem;
+  color: var(--color-text-secondary, #666);
+  margin: 0 0 0.5rem;
+  line-height: 1.5;
+}
+
+.pending-hint {
+  font-size: 0.8rem !important;
+  opacity: 0.7;
+}
+
+.pending-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-top: 1.5rem;
+}
+
+.btn-refresh {
+  padding: 0.6rem 1.2rem;
+  background: var(--color-accent, #1976d2);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: opacity 0.2s;
+}
+
+.btn-refresh:hover {
+  opacity: 0.9;
+}
+
+.btn-logout {
+  padding: 0.6rem 1.2rem;
+  background: transparent;
+  color: var(--color-text-secondary, #666);
+  border: 1px solid var(--color-border, #e0e0e0);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+
+.btn-logout:hover {
+  background: var(--color-bg-hover, #f0f0f0);
+}

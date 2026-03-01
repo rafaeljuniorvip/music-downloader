@@ -23,6 +23,8 @@ services:
       - YT_DLP_PATH=/usr/local/bin/yt-dlp
       - DOWNLOADS_DIR=/app/downloads
       - COOKIES_FILE=/app/cookies/youtube-cookies.txt
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - JWT_SECRET=${JWT_SECRET}
     volumes:
       - downloads:/app/downloads
       - /opt/downytube/cookies:/app/cookies

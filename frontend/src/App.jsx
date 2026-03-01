@@ -8,8 +8,13 @@ import SettingsPage from './components/SettingsPage/SettingsPage'
 import StatsPage from './components/StatsPage/StatsPage'
 import KeyboardShortcutsHelp from './components/KeyboardShortcutsHelp/KeyboardShortcutsHelp'
 import MiniPlayer from './components/MiniPlayer/MiniPlayer'
+import LoginPage from './components/LoginPage/LoginPage'
+import PendingApproval from './components/PendingApproval/PendingApproval'
+import UsersPage from './components/UsersPage/UsersPage'
+import ApiKeysPage from './components/ApiKeysPage/ApiKeysPage'
 import { api } from './services/api'
 import { useToast } from './context/ToastContext'
+import { useAuth } from './context/AuthContext'
 import { PlayerProvider } from './context/PlayerContext'
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts'
 import './App.css'
@@ -26,7 +31,9 @@ const ROUTE_TO_TAB = {
   '/search': 'search',
   '/history': 'history',
   '/stats': 'stats',
-  '/settings': 'settings'
+  '/settings': 'settings',
+  '/users': 'users',
+  '/api-keys': 'api-keys'
 }
 
 const TAB_TO_ROUTE = {
@@ -34,7 +41,9 @@ const TAB_TO_ROUTE = {
   search: '/search',
   history: '/history',
   stats: '/stats',
-  settings: '/settings'
+  settings: '/settings',
+  users: '/users',
+  'api-keys': '/api-keys'
 }
 
 // Obtem tab inicial baseado na URL
@@ -53,7 +62,9 @@ function App() {
   const downloadFormRef = useRef(null)
   const searchPageRef = useRef(null)
   const { addToast } = useToast()
+  const { user, token, loading: authLoading, logout } = useAuth()
 
+  // All hooks must be declared before any conditional returns
   // Funcao para mudar de tab e atualizar URL
   const handleTabChange = useCallback((tab) => {
     setActiveTab(tab)
@@ -160,7 +171,8 @@ function App() {
         eventSourceRef.current.close()
       }
 
-      const eventSource = new EventSource(`${API_BASE}/download/progress`)
+      const sseToken = localStorage.getItem('music-downloader-token')
+      const eventSource = new EventSource(`${API_BASE}/download/progress${sseToken ? `?token=${sseToken}` : ''}`)
       eventSourceRef.current = eventSource
 
       eventSource.addEventListener('init', (e) => {
@@ -343,9 +355,27 @@ function App() {
     }
   }
 
+  // Auth gate
+  if (authLoading) {
+    return (
+      <div className="loading-container" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div className="loading-spinner"></div>
+        <p>Carregando...</p>
+      </div>
+    )
+  }
+
+  if (!user || !token) {
+    return <LoginPage />
+  }
+
+  if (!user.approved) {
+    return <PendingApproval />
+  }
+
   return (
     <PlayerProvider>
-      <Layout activeTab={activeTab} onTabChange={handleTabChange}>
+      <Layout activeTab={activeTab} onTabChange={handleTabChange} user={user} onLogout={logout}>
         {loading ? (
           <div className="loading-container">
             <div className="loading-spinner"></div>
@@ -382,6 +412,12 @@ function App() {
             )}
             {activeTab === 'settings' && (
               <SettingsPage />
+            )}
+            {activeTab === 'users' && user?.role === 'admin' && (
+              <UsersPage />
+            )}
+            {activeTab === 'api-keys' && user?.role === 'admin' && (
+              <ApiKeysPage />
             )}
           </>
         )}

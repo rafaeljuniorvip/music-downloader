@@ -7,8 +7,13 @@ import statisticsRoutes from './routes/statistics.routes.js';
 import settingsRoutes from './routes/settings.routes.js';
 import filesRoutes from './routes/files.routes.js';
 import searchRoutes from './routes/search.routes.js';
+import authRoutes from './routes/auth.routes.js';
+import usersRoutes from './routes/users.routes.js';
+import apikeysRoutes from './routes/apikeys.routes.js';
+import v1Routes from './routes/v1.routes.js';
 import { initDatabase } from './config/database.js';
 import settingsService from './services/settings.service.js';
+import { requireAuth } from './middlewares/auth.middleware.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -47,14 +52,7 @@ app.use(express.urlencoded({ extended: true }));
 // Serve arquivos estáticos da pasta downloads
 app.use('/downloads', express.static(join(__dirname, '../downloads')));
 
-// Rotas da API
-app.use('/api', downloadRoutes);
-app.use('/api/statistics', statisticsRoutes);
-app.use('/api/settings', settingsRoutes);
-app.use('/api/files', filesRoutes);
-app.use('/api/search', searchRoutes);
-
-// Rota de health check
+// Rota de health check (publica)
 app.get('/api/health', (req, res) => {
   res.json({
     success: true,
@@ -62,6 +60,23 @@ app.get('/api/health', (req, res) => {
     timestamp: new Date().toISOString()
   });
 });
+
+// Rotas publicas (auth)
+app.use('/api', authRoutes);
+
+// Rotas externas protegidas por API key
+app.use('/api', v1Routes);
+
+// Rotas protegidas por JWT (requerem login + aprovacao)
+app.use('/api', requireAuth, downloadRoutes);
+app.use('/api/statistics', requireAuth, statisticsRoutes);
+app.use('/api/settings', requireAuth, settingsRoutes);
+app.use('/api/files', requireAuth, filesRoutes);
+app.use('/api/search', requireAuth, searchRoutes);
+
+// Rotas admin (auth + admin check interno nas rotas)
+app.use('/api', usersRoutes);
+app.use('/api', apikeysRoutes);
 
 // Tratamento de rotas não encontradas
 app.use((req, res) => {

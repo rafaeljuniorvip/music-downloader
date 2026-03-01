@@ -2,6 +2,10 @@
 # Stage 1: Build
 FROM node:20-alpine AS builder
 
+# Build arg para Google Client ID (disponivel em tempo de build via Vite)
+ARG VITE_GOOGLE_CLIENT_ID
+ENV VITE_GOOGLE_CLIENT_ID=$VITE_GOOGLE_CLIENT_ID
+
 WORKDIR /app
 
 # Copia package.json primeiro para cache
