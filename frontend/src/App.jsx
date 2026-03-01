@@ -164,8 +164,10 @@ function App() {
     }
   }
 
-  // Setup SSE connection
+  // Setup SSE connection (only when authenticated)
   useEffect(() => {
+    if (!user || !token || !user.approved) return
+
     const connectSSE = () => {
       if (eventSourceRef.current) {
         eventSourceRef.current.close()
@@ -243,16 +245,21 @@ function App() {
         eventSourceRef.current.close()
       }
     }
-  }, [])
+  }, [user, token])
 
+  // Load initial data (only when authenticated)
   useEffect(() => {
+    if (!user || !token || !user.approved) {
+      setLoading(false)
+      return
+    }
     const loadData = async () => {
       setLoading(true)
       await Promise.all([fetchQueue(), fetchHistory()])
       setLoading(false)
     }
     loadData()
-  }, [])
+  }, [user, token])
 
   const handleAddDownload = async (url, type) => {
     try {

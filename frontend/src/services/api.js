@@ -25,10 +25,14 @@ async function request(endpoint, options = {}) {
   const response = await fetch(url, config)
 
   if (response.status === 401) {
-    // Token expired or invalid - clear and redirect to login
+    const hadToken = !!getToken()
+    // Token expired or invalid - clear stored data
     localStorage.removeItem(TOKEN_KEY)
     localStorage.removeItem('music-downloader-user')
-    window.location.reload()
+    // Only reload if we had a token (session expired). If no token, user just isn't logged in.
+    if (hadToken) {
+      window.location.reload()
+    }
     throw new Error('Sessao expirada')
   }
 
