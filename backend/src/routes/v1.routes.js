@@ -8,5 +8,9 @@ const router = Router();
 // External API endpoints (each protected by API key)
 router.post('/v1/download', requireApiKey, downloadController.add);
 router.get('/v1/search', requireApiKey, searchController.search);
+router.get('/v1/queue', requireApiKey, downloadController.getQueue);
+router.get('/v1/files/:filename', requireApiKey, downloadController.serveFile);
+router.get('/v1/stream/:videoId', requireApiKey, downloadController.proxyStream);
+router.get('/v1/history', requireApiKey, downloadController.getHistory);
 
 export default router;
