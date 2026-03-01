@@ -5,11 +5,8 @@ import { searchController } from '../controllers/search.controller.js';
 
 const router = Router();
 
-// All v1 routes require API key
-router.use(requireApiKey);
-
-// External API endpoints
-router.post('/v1/download', downloadController.add);
-router.get('/v1/search', searchController.search);
+// External API endpoints (each protected by API key)
+router.post('/v1/download', requireApiKey, downloadController.add);
+router.get('/v1/search', requireApiKey, searchController.search);
 
 export default router;
