@@ -105,8 +105,12 @@ export const api = {
       method: 'DELETE'
     }),
 
-  // Get download file URL
-  getDownloadUrl: (filename) => `${API_BASE}/files/${encodeURIComponent(filename)}`,
+  // Get download file URL (with token for direct browser access)
+  getDownloadUrl: (filename) => {
+    const token = getToken()
+    const base = `${API_BASE}/files/${encodeURIComponent(filename)}`
+    return token ? `${base}?token=${token}` : base
+  },
 
   // Health check
   healthCheck: () => request('/health'),
@@ -140,8 +144,12 @@ export const api = {
     return request(`/search?${params}`)
   },
 
-  // Stream operations
-  getStreamUrl: (videoId) => `${API_BASE}/stream/${videoId}`,
+  // Stream operations (with token for direct browser access)
+  getStreamUrl: (videoId) => {
+    const token = getToken()
+    const base = `${API_BASE}/stream/${videoId}`
+    return token ? `${base}?token=${token}` : base
+  },
 
   // Auth operations
   googleLogin: (credential) =>
